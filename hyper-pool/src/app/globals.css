@@ -1,0 +1,90 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html {
+    @apply scroll-smooth;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+}
+
+@layer components {
+  .container {
+    @apply mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8;
+  }
+
+  .glassmorphism {
+    @apply bg-card/80 backdrop-blur-md border border-border/50;
+  }
+
+  .glassmorphism-dark {
+    @apply bg-card/60 backdrop-blur-xl border border-border/30;
+  }
+
+  .gradient-border {
+    @apply relative;
+    background: linear-gradient(#1a1a1a, #1a1a1a) padding-box,
+               linear-gradient(135deg, #8CFF00, #7AE600) border-box;
+    border: 1px solid transparent;
+  }
+
+  .btn-primary {
+    @apply bg-primary hover:bg-primary-hover text-primary-foreground font-medium
+           px-6 py-3 rounded-xl transition-all duration-200 active:scale-95;
+  }
+
+  .btn-secondary {
+    @apply bg-secondary hover:bg-card-hover text-secondary-foreground font-medium
+           px-6 py-3 rounded-xl transition-all duration-200 active:scale-95 border border-border;
+  }
+
+  .input-base {
+    @apply bg-input border border-border rounded-lg px-4 py-3 text-foreground
+           placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-primary/50
+           focus:border-primary transition-all duration-200;
+  }
+
+  .card-base {
+    @apply bg-card rounded-2xl p-6 border border-border/50;
+  }
+
+  .card-hover {
+    @apply hover:bg-card-hover hover:border-border transition-all duration-200 cursor-pointer;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .animate-in {
+    animation: fade-in 0.5s ease-in-out;
+  }
+
+  .gradient-text {
+    @apply bg-gradient-to-r from-primary to-primary-hover bg-clip-text text-transparent;
+  }
+
+  .safe-area-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
