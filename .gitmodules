@@ -1,0 +1,3 @@
+[submodule "HyperPoolSC"]
+	path = HyperPoolSC
+	url = https://github.com/0xmvercosa/HyperPoolSC
