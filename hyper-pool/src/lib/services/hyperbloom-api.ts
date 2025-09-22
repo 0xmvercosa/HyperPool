@@ -71,16 +71,27 @@ class HyperBloomAPI {
 
   // Get pool configuration
   private getPoolConfig(poolId: string) {
-    // Try to find pool by converting poolId to uppercase key format
-    const poolKey = poolId.toUpperCase().replace(/-/g, '-')
-    const pool = this.pools[poolKey as keyof typeof this.pools] ||
-                 Object.values(this.pools).find(p => p.id === poolId)
+    // Try to find pool by converting poolId to uppercase key format with underscore
+    const poolKey = poolId.toUpperCase().replace(/-/g, '_')
+    let pool = this.pools[poolKey as keyof typeof this.pools]
+
+    // If not found, try with dash
+    if (!pool) {
+      const poolKeyDash = poolId.toUpperCase().replace(/-/g, '-')
+      pool = this.pools[poolKeyDash as keyof typeof this.pools]
+    }
+
+    // If still not found, search by id
+    if (!pool) {
+      pool = Object.values(this.pools).find(p => p.id === poolId) || null
+    }
 
     console.log('[HyperBloom] Looking for pool:', {
       poolId,
       poolKey,
       availablePools: Object.keys(this.pools),
-      found: !!pool
+      found: !!pool,
+      poolConfig: pool
     })
 
     if (!pool) {
@@ -140,8 +151,7 @@ class HyperBloomAPI {
       return data
     } catch (error) {
       console.error('Failed to get price quote:', error)
-      // Return mock data for development
-      return this.getMockPriceQuote(sellToken, buyToken, sellAmount)
+      throw error
     }
   }
 
@@ -167,7 +177,11 @@ class HyperBloomAPI {
       const quotes = await Promise.all(
         poolConfig.outputTokens.map(async (outputToken, index) => {
           const ratio = finalRatios[index]
-          const proportionalAmount = (parseFloat(inputAmount) * ratio / 100).toString()
+          const inputNum = parseFloat(inputAmount)
+          if (isNaN(inputNum)) {
+            throw new Error(`Invalid input amount: ${inputAmount}`)
+          }
+          const proportionalAmount = (inputNum * ratio / 100).toString()
 
           return this.getPriceQuote(
             poolConfig.inputToken,
@@ -181,9 +195,18 @@ class HyperBloomAPI {
 
       // Calculate min output amounts (with slippage)
       const minOutputAmounts = quotes.map(quote => {
-        const buyAmount = BigInt(quote.buyAmount)
-        const slippageAmount = buyAmount * BigInt(Math.floor(slippagePercentage * 10000)) / BigInt(10000)
-        return (buyAmount - slippageAmount).toString()
+        try {
+          if (!quote.buyAmount || quote.buyAmount === 'NaN') {
+            console.warn('Invalid buyAmount in quote:', quote)
+            return '0'
+          }
+          const buyAmount = BigInt(quote.buyAmount)
+          const slippageAmount = buyAmount * BigInt(Math.floor(slippagePercentage * 10000)) / BigInt(10000)
+          return (buyAmount - slippageAmount).toString()
+        } catch (e) {
+          console.error('Error calculating min output:', quote.buyAmount, e)
+          return '0'
+        }
       })
 
       // Aggregate results
@@ -196,7 +219,15 @@ class HyperBloomAPI {
         minOutputAmounts,
         ratios: finalRatios,
         totalPriceImpact: Math.max(...quotes.map(q => parseFloat(q.estimatedPriceImpact || '0'))),
-        totalGas: quotes.reduce((sum, q) => (BigInt(sum) + BigInt(q.gas)).toString(), '0'),
+        totalGas: quotes.reduce((sum, q) => {
+          try {
+            const gas = q.gas || '0'
+            return (BigInt(sum) + BigInt(gas)).toString()
+          } catch (e) {
+            console.error('Error summing gas:', q.gas, e)
+            return sum
+          }
+        }, '0'),
         quotes
       }
     } catch (error) {
@@ -289,7 +320,11 @@ class HyperBloomAPI {
       const swapQuotes = await Promise.all(
         poolConfig.outputTokens.map(async (outputToken, index) => {
           const ratio = finalRatios[index]
-          const proportionalAmount = (parseFloat(inputAmount) * ratio / 100).toString()
+          const inputNum = parseFloat(inputAmount)
+          if (isNaN(inputNum)) {
+            throw new Error(`Invalid input amount: ${inputAmount}`)
+          }
+          const proportionalAmount = (inputNum * ratio / 100).toString()
 
           console.log(`[HyperBloom] Getting swap quote ${index + 1}:`, {
             from: poolConfig.inputToken,

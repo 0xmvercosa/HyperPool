@@ -145,42 +145,32 @@ export async function POST(request: NextRequest) {
 
     // Log importante sobre allowanceTarget
     if (data.allowanceTarget) {
+      const EXPECTED_ROUTER = '0x4212a77e4533eCa49643d7B731F5FB1b2782FE94'
       console.log('[IMPORTANT] Allowance Target from API:', data.allowanceTarget)
-      console.log('[IMPORTANT] Our HYPERBLOOM_ROUTER:', '0x75e7b9328ca96326515165b5210e9ad585c37a84')
-      if (data.allowanceTarget.toLowerCase() !== '0x75e7b9328ca96326515165b5210e9ad585c37a84') {
-        console.warn('[WARNING] Allowance Target MISMATCH! We are approving to wrong address!')
-        console.warn('[WARNING] API expects approval to:', data.allowanceTarget)
-        console.warn('[WARNING] We are approving to:', '0x75e7b9328ca96326515165b5210e9ad585c37a84')
+      console.log('[IMPORTANT] Expected HYPERBLOOM_ROUTER:', EXPECTED_ROUTER)
+      if (data.allowanceTarget.toLowerCase() !== EXPECTED_ROUTER.toLowerCase()) {
+        console.warn('[WARNING] Allowance Target MISMATCH! Router addresses do not match!')
+        console.warn('[WARNING] API returned:', data.allowanceTarget)
+        console.warn('[WARNING] Expected:', EXPECTED_ROUTER)
+      } else {
+        console.log('[SUCCESS] Allowance target matches expected router')
       }
     }
 
-    return NextResponse.json(data)
+    // Ensure we return the full data structure
+    return NextResponse.json({
+      ...data,
+      // Ensure these fields exist for frontend compatibility
+      chainId: data.chainId || 999,
+      value: data.value || '0',
+      gas: data.gas || '300000',
+      estimatedGas: data.estimatedGas || data.gas || '300000',
+      protocolFee: data.protocolFee || '0',
+      minimumProtocolFee: data.minimumProtocolFee || '0',
+      expectedSlippage: data.expectedSlippage || null
+    })
   } catch (error) {
     console.error('[API Route] Price endpoint error:', error)
-
-    // Return mock data for development if API fails
-    if (process.env.NODE_ENV === 'development') {
-      console.log('[API Route] Returning mock data for development')
-      return NextResponse.json({
-        chainId: 999,
-        price: "2.5",
-        estimatedPriceImpact: "0.02",
-        value: "0",
-        gasPrice: "47500000",
-        gas: "200000",
-        estimatedGas: "180000",
-        protocolFee: "0",
-        minimumProtocolFee: "0",
-        buyTokenAddress: "0x0000000000000000000000000000000000000000",
-        buyAmount: "400000000000000000", // 0.4 tokens with 18 decimals
-        sellTokenAddress: "0xb88339CB7199b77E23DB6E890353E22632Ba630f",
-        sellAmount: "1000000", // 1 USDC with 6 decimals
-        allowanceTarget: "0x0000000000000000000000000000000000000000",
-        sellTokenToEthRate: "1",
-        buyTokenToEthRate: "2.5",
-        expectedSlippage: null
-      })
-    }
 
     return NextResponse.json(
       { error: 'Internal server error', details: error instanceof Error ? error.message : 'Unknown error' },

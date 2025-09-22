@@ -6,6 +6,7 @@ import { useCallback, useEffect, useMemo } from 'react'
 import { formatEther, parseEther } from 'viem'
 import { useStore } from '@/lib/store/useStore'
 import { hyperEVM } from '@/lib/config/chains'
+import { useTokenBalance } from './useTokenBalance'
 
 export function useWallet() {
   const {
@@ -36,19 +37,34 @@ export function useWallet() {
     return wallets.find(w => w.walletClientType === 'privy') || wallets[0]
   }, [wallets])
 
-  // Get balance for the active address
-  const { data: balanceData, isLoading: balanceLoading, refetch: refetchBalance } = useBalance({
+  // Get native balance for the active address
+  const { data: balanceData, isLoading: nativeBalanceLoading, refetch: refetchNativeBalance } = useBalance({
     address: address as `0x${string}` | undefined,
     query: {
       enabled: !!address,
     },
   })
 
-  // Format balance
-  const formattedBalance = useMemo(() => {
+  // Get USDC balance
+  const { balance: usdcBalance, isLoading: usdcLoading, refetch: refetchUsdc } = useTokenBalance('USDC')
+
+  // Format native balance
+  const formattedNativeBalance = useMemo(() => {
     if (!balanceData) return '0'
     return formatEther(balanceData.value)
   }, [balanceData])
+
+  // Combine balances
+  const balance = useMemo(() => ({
+    native: parseFloat(formattedNativeBalance),
+    usdc: parseFloat(usdcBalance || '0')
+  }), [formattedNativeBalance, usdcBalance])
+
+  const balanceLoading = nativeBalanceLoading || usdcLoading
+
+  const refetchBalance = useCallback(async () => {
+    await Promise.all([refetchNativeBalance(), refetchUsdc()])
+  }, [refetchNativeBalance, refetchUsdc])
 
   // Update store when wallet changes
   useEffect(() => {
@@ -61,10 +77,10 @@ export function useWallet() {
 
   // Update balance in store
   useEffect(() => {
-    if (formattedBalance && formattedBalance !== '0') {
-      setStoreBalance(formattedBalance)
+    if (formattedNativeBalance && formattedNativeBalance !== '0') {
+      setStoreBalance(formattedNativeBalance)
     }
-  }, [formattedBalance, setStoreBalance])
+  }, [formattedNativeBalance, setStoreBalance])
 
   // Auto-switch to HyperEVM when connected
   useEffect(() => {
@@ -170,7 +186,7 @@ export function useWallet() {
     isReady: ready,
     isConnected: authenticated && !!activeWallet,
     address: activeWallet?.address || address,
-    balance: formattedBalance,
+    balance,
     balanceLoading,
     user,
     wallets,

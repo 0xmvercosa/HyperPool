@@ -8,6 +8,9 @@ import { useSendTransaction, useWaitForTransactionReceipt } from 'wagmi'
 import { hyperbloomAPI, PoolSwapQuote, formatTokenAmount } from '@/lib/services/hyperbloom-api'
 import { toast } from '@/lib/utils/toast'
 import tokensConfig from '@/config/tokens.json'
+import { combineSwapQuotes } from '@/lib/utils/multicall'
+import { formatTransactionForWallet } from '@/lib/utils/transaction-decoder'
+import { safeBigInt, safeNumber } from '@/lib/utils/safe-bigint'
 
 export interface SwapState {
   isLoading: boolean
@@ -196,25 +199,113 @@ export function useSwap() {
         }))
       })
 
-      // Check if we're doing multiple swaps
-      if (swapQuotes.length > 1) {
-        console.log('[executeSwap] Multiple swaps detected. Sending as separate transactions.')
-      }
+      // Check if we're doing multiple swaps and if multicall is available
+      const useMulticall = swapQuotes.length > 1 && tokensConfig.hyperEVM.contracts.multicall3
 
-      // For multiple swaps, we need to handle them sequentially with user approval
       if (swapQuotes.length > 1) {
-        console.log('[executeSwap] Multiple swaps detected. Processing sequentially...')
+        console.log('[executeSwap] Multiple swaps detected.', {
+          count: swapQuotes.length,
+          useMulticall,
+          multicallAddress: tokensConfig.hyperEVM.contracts.multicall3
+        })
 
-        // Show user what will happen
+        if (useMulticall) {
+          // Use multicall to combine all swaps into one transaction
+          console.log('[executeSwap] Using Multicall3 to batch transactions')
+
+          try {
+            const multicallTx = combineSwapQuotes(swapQuotes)
+
+            console.log('[executeSwap] Multicall transaction prepared:', {
+              to: multicallTx.to,
+              value: multicallTx.value.toString(),
+              gas: multicallTx.gas.toString(),
+              dataLength: multicallTx.data.length
+            })
+
+            // Show user what's happening
+            const outputTokens = poolConfig?.outputTokens || []
+            const swapSummary = outputTokens.map((token, i) => {
+              const quote = swapQuotes[i]
+              return `${formatTokenAmount(quote.buyAmount, token)} ${token}`
+            }).join(' + ')
+
+            toast.loading(`Swapping ${inputAmount} ${inputTokenSymbol} for ${swapSummary}...`, {
+              id: 'multicall-swap'
+            })
+
+            // Format transaction with enhanced metadata
+            const formattedTx = formatTransactionForWallet({
+              to: multicallTx.to,
+              data: multicallTx.data,
+              value: multicallTx.value,
+              inputAmount,
+              inputToken: inputTokenSymbol,
+              outputTokens: poolConfig?.outputTokens || [],
+              ratios
+            })
+
+            // Execute the multicall transaction with enhanced metadata
+            const tx = await sendTransactionAsync({
+              ...formattedTx,
+              gas: multicallTx.gas,
+              from: address as `0x${string}`,
+              chainId: 999,
+              // Additional metadata for better wallet display
+              account: address as `0x${string}`,
+            } as any)
+
+            console.log('[executeSwap] Multicall transaction sent:', tx)
+
+            toast.success(`Successfully swapped for ${swapSummary}!`, {
+              id: 'multicall-swap'
+            })
+
+            // Return single transaction hash
+            const txHashes = [tx]
+            console.log('[executeSwap] All swaps completed in one transaction:', tx)
+
+            // Show final success message
+            if (txHashes.length > 0) {
+              toast.success(`Swap completed successfully!`)
+            }
+
+            // Store first tx hash for tracking
+            setState(prev => ({
+              ...prev,
+              isSwapping: false,
+              txHash: txHashes[0]
+            }))
+
+            // Format output for display
+            if (state.quote) {
+              const outputs = state.quote.outputTokens
+                .map((token, i) => `${formatTokenAmount(state.quote!.minOutputAmounts[i], token)} ${token}`)
+                .join(' + ')
+              toast.info(`You will receive at least: ${outputs}`)
+            }
+
+            return {
+              success: true,
+              txHashes
+            }
+          } catch (error) {
+            console.error('[executeSwap] Multicall failed:', error)
+            // Fall back to sequential execution
+            console.log('[executeSwap] Falling back to sequential execution')
+          }
+        }
+
+        // Show user what will happen with sequential execution
         const swapDetails = swapQuotes.map((q, i) => {
           const outputToken = poolConfig?.outputTokens[i] || 'Unknown'
           return `Swap ${i + 1}: ${inputAmount} ${inputTokenSymbol} → ${outputToken}`
         }).join('\n')
 
-        toast.info(`Processing ${swapQuotes.length} swaps:\n${swapDetails}`)
+        toast.info(`Processing ${swapQuotes.length} swaps sequentially:\n${swapDetails}`)
       }
 
-      // Execute transactions sequentially to ensure proper wallet handling
+      // Sequential execution (fallback or single swap)
       const txHashes = []
       for (let index = 0; index < swapQuotes.length; index++) {
         const quote = swapQuotes[index]
@@ -231,15 +322,15 @@ export function useSwap() {
         const txRequest = {
           to: quote.to as `0x${string}`,
           data: quote.data as `0x${string}`,
-          value: BigInt(quote.value || 0),
-          gas: BigInt(Math.floor(Number(quote.gas || 300000) * 1.2)), // 20% buffer
+          value: safeBigInt(quote.value, 0n),
+          gas: safeBigInt(Math.floor(safeNumber(quote.gas, 300000) * 1.2), 360000n), // 20% buffer with safe conversion
           from: address as `0x${string}`,
           chainId: 999,
-          // Add nonce if available to help with transaction ordering
-          ...(index > 0 && { nonce: index }),
-          // Add gasPrice if available
-          ...(quote.gasPrice && { gasPrice: BigInt(quote.gasPrice) }),
-        }
+          // Add gasPrice if available with safe conversion
+          ...(quote.gasPrice && { gasPrice: safeBigInt(quote.gasPrice) }),
+          // Additional metadata
+          account: address as `0x${string}`,
+        } as any
 
         // Log transaction details for debugging
         console.log(`[executeSwap] Transaction ${index + 1} details:`, {

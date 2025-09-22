@@ -62,7 +62,7 @@ export function WalletConnect() {
     return (
       <button
         disabled
-        className="btn-primary flex items-center gap-2 opacity-50 cursor-not-allowed"
+        className="bg-[#8CFF00] text-black font-medium px-6 py-2.5 rounded-xl flex items-center gap-2 opacity-50 cursor-not-allowed"
       >
         <Loader2 className="w-5 h-5 animate-spin" />
         <span>Loading...</span>
@@ -75,31 +75,27 @@ export function WalletConnect() {
       <div className="relative">
         <button
           onClick={() => setShowDropdown(!showDropdown)}
-          className={cn(
-            'flex items-center gap-2 px-4 py-2.5 rounded-xl',
-            'bg-card border border-border',
-            'hover:bg-card-hover transition-all duration-200'
-          )}
+          className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 transition-all duration-200"
         >
           <div className={cn(
             "w-2 h-2 rounded-full animate-pulse",
-            isOnHyperEVM ? "bg-primary" : "bg-yellow-500"
+            isOnHyperEVM ? "bg-[#8CFF00]" : "bg-yellow-500"
           )} />
           <div className="flex flex-col items-start">
-            <span className="text-sm font-medium">{shortenAddress(address)}</span>
-            <span className="text-xs text-muted">
+            <span className="text-sm font-medium text-white">{shortenAddress(address)}</span>
+            <span className="text-xs text-gray-400">
               {isOnHyperEVM ? "HyperEVM" : "Wrong Network"}
             </span>
           </div>
-          <ChevronDown className="w-4 h-4 text-muted" />
+          <ChevronDown className="w-4 h-4 text-gray-400" />
         </button>
 
         {showDropdown && (
-          <div className="absolute top-full right-0 mt-2 w-48 bg-card border border-border rounded-xl shadow-xl z-50">
+          <div className="absolute top-full right-0 mt-2 w-48 bg-zinc-900 border border-zinc-800 rounded-xl shadow-xl z-50">
             {!isOnHyperEVM && (
               <button
                 onClick={switchToHyperEVM}
-                className="w-full text-left px-4 py-3 hover:bg-card-hover transition-colors rounded-t-xl flex items-center gap-2 text-yellow-500"
+                className="w-full text-left px-4 py-3 hover:bg-zinc-800 transition-colors rounded-t-xl flex items-center gap-2 text-yellow-500"
               >
                 <AlertCircle className="w-4 h-4" />
                 <span className="text-sm">Switch to HyperEVM</span>
@@ -109,7 +105,7 @@ export function WalletConnect() {
               <button
                 onClick={handleSwitchWallet}
                 disabled={isLoading}
-                className="w-full text-left px-4 py-3 hover:bg-card-hover transition-colors flex items-center gap-2"
+                className="w-full text-left px-4 py-3 hover:bg-zinc-800 transition-colors flex items-center gap-2 text-white"
               >
                 <Wallet className="w-4 h-4" />
                 <span className="text-sm">Switch Wallet</span>
@@ -118,7 +114,7 @@ export function WalletConnect() {
             <button
               onClick={handleDisconnect}
               disabled={isLoading}
-              className="w-full text-left px-4 py-3 hover:bg-card-hover transition-colors rounded-b-xl flex items-center gap-2 text-red-500"
+              className="w-full text-left px-4 py-3 hover:bg-zinc-800 transition-colors rounded-b-xl flex items-center gap-2 text-red-500"
             >
               {isLoading ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
@@ -137,7 +133,7 @@ export function WalletConnect() {
     <button
       onClick={handleConnect}
       disabled={isLoading}
-      className="btn-primary flex items-center gap-2"
+      className="bg-[#8CFF00] hover:bg-[#7AE600] text-black font-medium px-6 py-2.5 rounded-xl transition-all duration-200 active:scale-95 flex items-center gap-2"
     >
       {isLoading ? (
         <Loader2 className="w-5 h-5 animate-spin" />

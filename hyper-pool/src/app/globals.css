@@ -15,6 +15,56 @@
     @apply bg-background text-foreground;
     font-feature-settings: "rlig" 1, "calt" 1;
   }
+
+  /* Custom slider styles */
+  input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    background: transparent;
+    cursor: pointer;
+  }
+
+  input[type="range"]::-webkit-slider-track {
+    height: 8px;
+    background: transparent;
+    border-radius: 4px;
+  }
+
+  input[type="range"]::-moz-range-track {
+    height: 8px;
+    background: transparent;
+    border-radius: 4px;
+  }
+
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    background: #8CFF00;
+    height: 20px;
+    width: 20px;
+    border-radius: 50%;
+    margin-top: -6px;
+    cursor: grab;
+    border: 2px solid #000;
+  }
+
+  input[type="range"]::-moz-range-thumb {
+    background: #8CFF00;
+    height: 20px;
+    width: 20px;
+    border-radius: 50%;
+    cursor: grab;
+    border: 2px solid #000;
+    border: none;
+  }
+
+  input[type="range"]:active::-webkit-slider-thumb {
+    cursor: grabbing;
+  }
+
+  input[type="range"]:active::-moz-range-thumb {
+    cursor: grabbing;
+  }
 }
 
 @layer components {
@@ -86,5 +136,55 @@
   .no-scrollbar {
     -ms-overflow-style: none;
     scrollbar-width: none;
+  }
+
+  /* Splash screen animations */
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes float {
+    0%, 100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-10px);
+    }
+  }
+
+  @keyframes pulse-glow {
+    0%, 100% {
+      opacity: 0.5;
+    }
+    50% {
+      opacity: 1;
+    }
+  }
+
+  /* Custom slider styles */
+  input[type="range"]::-webkit-slider-thumb {
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: white;
+    cursor: pointer;
+    border: 3px solid #8CFF00;
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
+  }
+
+  input[type="range"]::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: white;
+    cursor: pointer;
+    border: 3px solid #8CFF00;
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
   }
 }

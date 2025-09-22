@@ -1,0 +1,241 @@
+{
+  "pools": [
+    {
+      "id": "hype-ubtc",
+      "name": "HYPE/UBTC",
+      "shortDescription": "High yield opportunity with HYPE and Bitcoin pair on HyperSwap V3.",
+      "fullDescription": "Maximize your returns with the hottest APR pool on HyperSwap V3.",
+      "tagline": "Hot APR",
+      "risk": "high",
+      "riskLevel": 4,
+      "riskDescription": "Higher risk with potential for significant returns. Price volatility expected.",
+      "apy": {
+        "current": 93.82,
+        "avg30d": 85.5,
+        "projected": 95.0
+      },
+      "fees": {
+        "management": 1.0,
+        "performance": 20,
+        "feesApy": 1.0
+      },
+      "tokens": [
+        { "symbol": "HYPE", "allocation": 50 },
+        { "symbol": "BTC", "allocation": 50 }
+      ],
+      "minInvestment": 0.10,
+      "maxInvestment": 1000000,
+      "tvl": "$7,899,170",
+      "investors": 342,
+      "performance": {
+        "24h": 0.02,
+        "7d": 0.14,
+        "30d": 0.62,
+        "90d": 1.85,
+        "1y": 7.41
+      },
+      "analystRating": {
+        "score": 4.5,
+        "safety": "Excellent",
+        "liquidity": "High",
+        "volatility": "Very Low"
+      }
+    },
+    {
+      "id": "ubtc-usdt",
+      "name": "UBTC/USDT",
+      "shortDescription": "Stable Bitcoin exposure with USDT pairing for reduced volatility.",
+      "fullDescription": "Earn consistent yields with Bitcoin and stablecoin liquidity provision.",
+      "tagline": "Best APR",
+      "risk": "low",
+      "riskLevel": 2,
+      "riskDescription": "Lower risk with stablecoin pairing to reduce volatility.",
+      "apy": {
+        "current": 3.79,
+        "avg30d": 3.5,
+        "projected": 4.0
+      },
+      "fees": {
+        "management": 0.3,
+        "performance": 10,
+        "feesApy": 0.03
+      },
+      "tokens": [
+        { "symbol": "BTC", "allocation": 50 },
+        { "symbol": "USDT", "allocation": 50 }
+      ],
+      "minInvestment": 0.10,
+      "maxInvestment": 1000000,
+      "tvl": "$14,842,970",
+      "investors": 1856,
+      "performance": {
+        "24h": 0.45,
+        "7d": 2.1,
+        "30d": 3.8,
+        "90d": 8.5,
+        "1y": 11.34
+      },
+      "analystRating": {
+        "score": 4.2,
+        "safety": "Very Good",
+        "liquidity": "High",
+        "volatility": "Low"
+      }
+    },
+    {
+      "id": "hype-usdt",
+      "name": "HYPE/USDT",
+      "shortDescription": "High yield HYPE and USDT liquidity provision on HyperSwap V3.",
+      "fullDescription": "Earn high yields by providing liquidity to the HYPE/USDT pool with concentrated liquidity.",
+      "tagline": "Hot APR 🔥",
+      "risk": "high",
+      "riskLevel": 4,
+      "riskDescription": "Higher risk with potential for significant returns. Price volatility expected.",
+      "apy": {
+        "current": 106.64,
+        "avg30d": 98.5,
+        "projected": 110.0
+      },
+      "fees": {
+        "management": 1.0,
+        "performance": 20,
+        "feesApy": 1.0
+      },
+      "tokens": [
+        { "symbol": "WHYPE", "allocation": 50 },
+        { "symbol": "USDT", "allocation": 50 }
+      ],
+      "minInvestment": 0.50,
+      "maxInvestment": 1000000,
+      "tvl": "$3,900,856.27",
+      "investors": 256,
+      "performance": {
+        "24h": 2.5,
+        "7d": 8.7,
+        "30d": 15.3,
+        "90d": 42.1,
+        "1y": 106.64
+      },
+      "analystRating": {
+        "score": 4.3,
+        "safety": "Good",
+        "liquidity": "High",
+        "volatility": "High"
+      }
+    },
+    {
+      "id": "balanced",
+      "name": "Balanced",
+      "shortDescription": "A mix of stable and growth assets for moderate risk and reward potential.",
+      "fullDescription": "Balanced portfolio combining stablecoins, major cryptocurrencies, and emerging assets for optimized risk-reward.",
+      "tagline": "Best of both",
+      "risk": "medium",
+      "riskLevel": 3,
+      "riskDescription": "Moderate risk with potential for higher returns, suitable for experienced investors.",
+      "apy": {
+        "current": 18.5,
+        "avg30d": 17.2,
+        "projected": 20.0
+      },
+      "fees": {
+        "management": 1.0,
+        "performance": 20,
+        "feesApy": 0.12
+      },
+      "tokens": [
+        { "symbol": "ETH", "allocation": 30 },
+        { "symbol": "HYPE", "allocation": 25 },
+        { "symbol": "BTC", "allocation": 20 },
+        { "symbol": "SOL", "allocation": 15 },
+        { "symbol": "USDC", "allocation": 10 }
+      ],
+      "minInvestment": 0.10,
+      "maxInvestment": 250000,
+      "tvl": "$8,765,432",
+      "investors": 3456,
+      "performance": {
+        "24h": 1.2,
+        "7d": 4.5,
+        "30d": 7.8,
+        "90d": 15.2,
+        "1y": 18.5
+      },
+      "analystRating": {
+        "score": 4.0,
+        "safety": "Good",
+        "liquidity": "Medium",
+        "volatility": "Medium"
+      }
+    },
+    {
+      "id": "growth",
+      "name": "Growth",
+      "shortDescription": "High-growth potential with emerging cryptocurrencies and DeFi protocols.",
+      "fullDescription": "Aggressive growth strategy focusing on high-potential assets and emerging DeFi opportunities.",
+      "tagline": "Maximize returns",
+      "risk": "high",
+      "riskLevel": 4,
+      "riskDescription": "Higher risk with potential for significant returns. Only invest what you can afford to lose.",
+      "apy": {
+        "current": 35.2,
+        "avg30d": 32.5,
+        "projected": 40.0
+      },
+      "fees": {
+        "management": 1.5,
+        "performance": 25,
+        "feesApy": 0.15
+      },
+      "tokens": [
+        { "symbol": "HYPE", "allocation": 40 },
+        { "symbol": "SOL", "allocation": 30 },
+        { "symbol": "ETH", "allocation": 20 },
+        { "symbol": "BTC", "allocation": 10 }
+      ],
+      "minInvestment": 0.10,
+      "maxInvestment": 100000,
+      "tvl": "$3,456,789",
+      "investors": 1567,
+      "performance": {
+        "24h": 2.5,
+        "7d": 8.2,
+        "30d": 15.6,
+        "90d": 28.9,
+        "1y": 35.2
+      },
+      "analystRating": {
+        "score": 3.5,
+        "safety": "Moderate",
+        "liquidity": "Medium",
+        "volatility": "High"
+      }
+    }
+  ],
+  "riskLevels": {
+    "1": {
+      "label": "Very Low",
+      "color": "#8CFF00",
+      "description": "Minimal risk with stable returns"
+    },
+    "2": {
+      "label": "Low",
+      "color": "#8CFF00",
+      "description": "Conservative approach with controlled risk"
+    },
+    "3": {
+      "label": "Medium",
+      "color": "#FFB800",
+      "description": "Balanced risk and reward"
+    },
+    "4": {
+      "label": "High",
+      "color": "#FF6B00",
+      "description": "Higher risk with growth potential"
+    },
+    "5": {
+      "label": "Very High",
+      "color": "#FF0000",
+      "description": "Significant risk, expert only"
+    }
+  }
+}
