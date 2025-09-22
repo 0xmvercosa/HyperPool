@@ -43,6 +43,19 @@ export const EarnModal = ({ isOpen, onClose, poolId }: EarnModalProps) => {
     }
   }, [isOpen, pool, balance]);
 
+  // Prevent body scroll when modal is open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = 'unset'
+    }
+
+    return () => {
+      document.body.style.overflow = 'unset'
+    }
+  }, [isOpen]);
+
   if (!pool) return null;
 
   // Calculate projected yield based on investment amount and APY
@@ -90,10 +103,14 @@ export const EarnModal = ({ isOpen, onClose, poolId }: EarnModalProps) => {
 
       console.log('Getting quote with ratios:', ratios);
 
+      // Use the proper swap pool ID for getting quotes
+      const swapPoolId = 'usdc-whype-usdt';
+      const swapRatios = [50, 50]; // Default 50/50 split
+
       const quote = await getQuote(
-        poolId,
+        swapPoolId,
         investmentAmount.toFixed(2),
-        ratios.length > 0 ? ratios : undefined
+        swapRatios
       );
 
       console.log('Quote received:', quote);
@@ -186,14 +203,22 @@ export const EarnModal = ({ isOpen, onClose, poolId }: EarnModalProps) => {
 
       console.log('Sending swap with amount:', amountString);
 
-      // Build ratios based on pool tokens allocation
-      const ratios = pool.tokens
-        .filter(token => token.symbol !== 'USDC' && token.symbol !== 'USDT')
-        .map(token => token.allocation);
+      // For now, use a hardcoded pool ID and ratios for USDC -> WHYPE/USDT
+      // In production, this should map the pool.id to the correct swap pool
+      const swapPoolId = 'usdc-whype-usdt';
+      const ratios = [50, 50]; // Default 50/50 split for WHYPE/USDT
+
+      console.log('Investment details:', {
+        displayPoolId: poolId,
+        swapPoolId,
+        amount: amountString,
+        ratios,
+        tokens: pool.tokens.map(t => ({ symbol: t.symbol, allocation: t.allocation }))
+      });
 
       // First step: Approve tokens if needed
       setTransactionStep('approving');
-      const approved = await approveInputToken(poolId!, amountString);
+      const approved = await approveInputToken(swapPoolId, amountString);
 
       if (!approved) {
         setTransactionStep('idle');
@@ -204,7 +229,7 @@ export const EarnModal = ({ isOpen, onClose, poolId }: EarnModalProps) => {
       // Second step: Execute swap
       setTransactionStep('swapping');
       const result = await executeSwap(
-        poolId!,
+        swapPoolId,
         amountString,
         ratios,
         0.5 // 0.5% slippage
@@ -257,7 +282,7 @@ export const EarnModal = ({ isOpen, onClose, poolId }: EarnModalProps) => {
           initial="hidden"
           animate="visible"
           exit="hidden"
-          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center"
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center"
           onClick={onClose}
         >
           <motion.div
@@ -266,11 +291,11 @@ export const EarnModal = ({ isOpen, onClose, poolId }: EarnModalProps) => {
             animate="visible"
             exit="hidden"
             transition={{ type: "spring", damping: 30 }}
-            className="fixed inset-0 md:relative md:inset-auto bg-black md:bg-zinc-900 md:rounded-2xl w-full md:max-w-md max-h-screen overflow-y-auto"
+            className="bg-black sm:bg-zinc-900 rounded-t-3xl sm:rounded-2xl w-full max-w-md max-h-[calc(100vh-100px)] flex flex-col"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header */}
-            <div className="sticky top-0 bg-black md:bg-zinc-900 border-b border-zinc-800 p-4 flex items-center gap-4 z-10">
+            <div className="bg-black sm:bg-zinc-900 border-b border-zinc-800 p-4 flex items-center gap-4">
               <button
                 onClick={onClose}
                 className="text-white hover:text-gray-300 transition-colors"
@@ -285,8 +310,10 @@ export const EarnModal = ({ isOpen, onClose, poolId }: EarnModalProps) => {
               </div>
             </div>
 
-            {/* Multi-step Modal Overlay */}
-            {transactionStep !== 'idle' && (
+            {/* Scrollable Content */}
+            <div className="overflow-y-auto flex-1 pb-32">
+              {/* Multi-step Modal Overlay */}
+              {transactionStep !== 'idle' && (
               <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[60] flex items-center justify-center">
                 <div className="bg-zinc-900 rounded-2xl p-6 max-w-sm w-full mx-4">
                   <div className="text-center">
@@ -551,15 +578,15 @@ export const EarnModal = ({ isOpen, onClose, poolId }: EarnModalProps) => {
 
             {/* Swap Preview Modal */}
             {showPreview && quoteData && (
-              <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[70] flex items-center justify-center px-4">
-                <div className="bg-zinc-900 rounded-2xl max-w-md w-full">
+              <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[70] flex items-end sm:items-center justify-center">
+                <div className="bg-zinc-900 rounded-t-3xl sm:rounded-2xl max-w-md w-full max-h-[calc(100vh-100px)] flex flex-col">
                   {/* Header */}
                   <div className="p-4 border-b border-zinc-800">
                     <h3 className="text-lg font-semibold text-white">Review Swap</h3>
                   </div>
 
-                  {/* Content */}
-                  <div className="p-4 space-y-4">
+                  {/* Scrollable Content */}
+                  <div className="overflow-y-auto flex-1 p-4 pb-24 space-y-4">
                     {/* You Pay */}
                     <div>
                       <p className="text-gray-400 text-sm mb-2">You Pay</p>
@@ -703,32 +730,33 @@ export const EarnModal = ({ isOpen, onClose, poolId }: EarnModalProps) => {
                         </p>
                       </div>
                     </div>
-                  </div>
 
-                  {/* Actions */}
-                  <div className="p-4 border-t border-zinc-800 flex gap-3">
-                    <button
-                      onClick={() => {
-                        setShowPreview(false);
-                        setQuoteData(null);
-                      }}
-                      className="flex-1 px-4 py-3 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-white font-semibold transition-colors"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      onClick={() => {
-                        setShowPreview(false);
-                        handleInvest();
-                      }}
-                      className="flex-1 px-4 py-3 rounded-xl bg-[#8CFF00] hover:bg-[#7AE600] text-black font-semibold transition-colors"
-                    >
-                      Invest
-                    </button>
+                    {/* Actions */}
+                    <div className="pt-4 border-t border-zinc-800 flex gap-3">
+                      <button
+                        onClick={() => {
+                          setShowPreview(false);
+                          setQuoteData(null);
+                        }}
+                        className="flex-1 px-4 py-3 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-white font-semibold transition-colors"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        onClick={() => {
+                          setShowPreview(false);
+                          handleInvest();
+                        }}
+                        className="flex-1 px-4 py-3 rounded-xl bg-[#8CFF00] hover:bg-[#7AE600] text-black font-semibold transition-colors"
+                      >
+                        Invest
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
             )}
+            </div>
           </motion.div>
         </motion.div>
       )}

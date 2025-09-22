@@ -112,9 +112,15 @@ class HyperBloomAPI {
       const sellTokenAddress = this.getTokenAddress(sellToken)
       const buyTokenAddress = this.getTokenAddress(buyToken)
 
-      // Convert amount to base units
+      // Validate and convert amount to base units
+      const sellAmountNum = parseFloat(sellAmount)
+      if (isNaN(sellAmountNum) || sellAmountNum <= 0) {
+        console.error('[HyperBloom Service] Invalid sellAmount:', sellAmount)
+        throw new Error(`Invalid sell amount: ${sellAmount}`)
+      }
+
       const sellTokenDecimals = this.tokens[sellToken as keyof typeof this.tokens].decimals
-      const sellAmountBase = BigInt(Math.floor(parseFloat(sellAmount) * (10 ** sellTokenDecimals))).toString()
+      const sellAmountBase = BigInt(Math.floor(sellAmountNum * (10 ** sellTokenDecimals))).toString()
 
       console.log('[HyperBloom Service] Getting price quote:', {
         sellToken: `${sellToken} (${sellTokenAddress})`,
@@ -248,9 +254,15 @@ class HyperBloomAPI {
       const sellTokenAddress = this.getTokenAddress(sellToken)
       const buyTokenAddress = this.getTokenAddress(buyToken)
 
-      // Convert amount to base units
+      // Validate and convert amount to base units
+      const sellAmountNum = parseFloat(sellAmount)
+      if (isNaN(sellAmountNum) || sellAmountNum <= 0) {
+        console.error('[HyperBloom Service] Invalid sellAmount:', sellAmount)
+        throw new Error(`Invalid sell amount: ${sellAmount}`)
+      }
+
       const sellTokenDecimals = this.tokens[sellToken as keyof typeof this.tokens].decimals
-      const sellAmountBase = BigInt(Math.floor(parseFloat(sellAmount) * (10 ** sellTokenDecimals))).toString()
+      const sellAmountBase = BigInt(Math.floor(sellAmountNum * (10 ** sellTokenDecimals))).toString()
 
       console.log('[HyperBloom Service] Getting swap quote:', {
         sellToken: `${sellToken} (${sellTokenAddress})`,
@@ -321,10 +333,22 @@ class HyperBloomAPI {
         poolConfig.outputTokens.map(async (outputToken, index) => {
           const ratio = finalRatios[index]
           const inputNum = parseFloat(inputAmount)
-          if (isNaN(inputNum)) {
+          if (isNaN(inputNum) || inputNum <= 0) {
+            console.error(`[HyperBloom] Invalid input amount for swap ${index + 1}:`, inputAmount)
             throw new Error(`Invalid input amount: ${inputAmount}`)
           }
-          const proportionalAmount = (inputNum * ratio / 100).toString()
+
+          const proportionalValue = inputNum * ratio / 100
+          if (isNaN(proportionalValue) || proportionalValue <= 0) {
+            console.error(`[HyperBloom] Invalid proportional amount calculation:`, {
+              inputNum,
+              ratio,
+              result: proportionalValue
+            })
+            throw new Error(`Invalid proportional amount calculation`)
+          }
+
+          const proportionalAmount = proportionalValue.toString()
 
           console.log(`[HyperBloom] Getting swap quote ${index + 1}:`, {
             from: poolConfig.inputToken,

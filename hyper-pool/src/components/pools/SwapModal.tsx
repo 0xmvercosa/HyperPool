@@ -57,6 +57,19 @@ export function SwapModal({ pool, isOpen, onClose }: SwapModalProps) {
     }
   }, [isOpen, clearQuote])
 
+  // Prevent body scroll when modal is open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = 'unset'
+    }
+
+    return () => {
+      document.body.style.overflow = 'unset'
+    }
+  }, [isOpen])
+
   if (!isOpen) return null
 
   const handleSwap = async () => {
@@ -97,22 +110,24 @@ export function SwapModal({ pool, isOpen, onClose }: SwapModalProps) {
         onClick={onClose}
       />
 
-      <div className="relative w-full max-w-lg bg-card rounded-t-3xl sm:rounded-2xl p-6 animate-slide-in">
-        <button
-          onClick={onClose}
-          className="absolute top-4 right-4 p-2 rounded-lg hover:bg-card-hover transition-colors"
-        >
-          <X className="w-5 h-5" />
-        </button>
-
-        <div className="mb-6">
-          <h3 className="text-xl font-bold mb-2">Swap into Pool</h3>
-          <p className="text-sm text-muted">
-            Swap USDC into multiple tokens with automatic distribution
-          </p>
+      <div className="relative w-full max-w-lg max-h-[calc(100vh-100px)] bg-card rounded-t-3xl sm:rounded-2xl animate-slide-in flex flex-col">
+        <div className="flex items-center justify-between p-6 pb-4 border-b border-white/5">
+          <div>
+            <h3 className="text-xl font-bold mb-2">Swap into Pool</h3>
+            <p className="text-sm text-muted">
+              Swap USDC into multiple tokens with automatic distribution
+            </p>
+          </div>
+          <button
+            onClick={onClose}
+            className="p-2 rounded-lg hover:bg-card-hover transition-colors"
+          >
+            <X className="w-5 h-5" />
+          </button>
         </div>
 
-        <div className="space-y-4">
+        <div className="overflow-y-auto flex-1 p-6 pb-32">
+          <div className="space-y-4">
           {/* Input Section */}
           <div className="card-base bg-secondary">
             <label className="text-xs text-muted block mb-2">
@@ -345,6 +360,7 @@ export function SwapModal({ pool, isOpen, onClose }: SwapModalProps) {
               )}
             </button>
           )}
+          </div>
         </div>
       </div>
     </div>

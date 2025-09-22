@@ -32,6 +32,19 @@ export const AddLiquidityModal = ({ isOpen, onClose, pool }: AddLiquidityModalPr
     }
   }, [isOpen]);
 
+  // Prevent body scroll when modal is open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = 'unset'
+    }
+
+    return () => {
+      document.body.style.overflow = 'unset'
+    }
+  }, [isOpen]);
+
   if (!pool) return null;
 
   const handleSubmit = async () => {
@@ -85,7 +98,7 @@ export const AddLiquidityModal = ({ isOpen, onClose, pool }: AddLiquidityModalPr
           initial="hidden"
           animate="visible"
           exit="hidden"
-          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center px-4"
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center"
           onClick={onClose}
         >
           <motion.div
@@ -94,19 +107,22 @@ export const AddLiquidityModal = ({ isOpen, onClose, pool }: AddLiquidityModalPr
             animate="visible"
             exit="hidden"
             transition={{ type: "spring", bounce: 0.3, duration: 0.4 }}
-            className="bg-zinc-900 rounded-2xl p-6 max-w-md w-full"
+            className="bg-zinc-900 rounded-t-3xl sm:rounded-2xl w-full max-w-md max-h-[calc(100vh-100px)] flex flex-col"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header */}
-            <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center justify-between p-6 pb-4 border-b border-white/5">
               <h2 className="text-xl font-semibold text-white">Add Liquidity</h2>
               <button
                 onClick={onClose}
-                className="text-gray-400 hover:text-white transition-colors"
+                className="p-2 rounded-lg hover:bg-zinc-800 transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
+
+            {/* Scrollable Content */}
+            <div className="overflow-y-auto flex-1 p-6 pb-32">
 
             {/* Pool Info */}
             <div className="bg-zinc-800 rounded-xl p-4 mb-6">
@@ -196,6 +212,7 @@ export const AddLiquidityModal = ({ isOpen, onClose, pool }: AddLiquidityModalPr
                   <span>Add Liquidity</span>
                 )}
               </button>
+            </div>
             </div>
           </motion.div>
         </motion.div>

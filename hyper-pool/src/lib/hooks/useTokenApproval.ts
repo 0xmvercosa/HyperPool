@@ -54,7 +54,7 @@ export function useTokenApproval() {
     }
 
     // Native token doesn't need approval
-    if (token.isNative) {
+    if ('isNative' in token && token.isNative) {
       console.log('[checkAllowance] Native token, infinite approval')
       return BigInt(Number.MAX_SAFE_INTEGER)
     }
@@ -153,7 +153,7 @@ export function useTokenApproval() {
     }
 
     // Native token doesn't need approval
-    if (token.isNative) {
+    if ('isNative' in token && token.isNative) {
       console.log('[Approval] Native token detected, no approval needed')
       return true
     }
@@ -171,8 +171,15 @@ export function useTokenApproval() {
 
       let amountInWei: bigint
       try {
-        amountInWei = parseUnits(amount, token.decimals)
-        console.log('[Approval] Amount parsed:', amountInWei.toString())
+        // Add 1% buffer to the approval amount to account for fees/slippage
+        const amountFloat = parseFloat(amount)
+        const amountWithBuffer = amountFloat * 1.01 // 1% buffer
+        amountInWei = parseUnits(amountWithBuffer.toString(), token.decimals)
+        console.log('[Approval] Amount parsed with 1% buffer:', {
+          originalAmount: amount,
+          amountWithBuffer: amountWithBuffer.toString(),
+          amountInWei: amountInWei.toString()
+        })
       } catch (parseError) {
         console.error('[Approval] Error parsing amount:', parseError)
         throw new Error(`Invalid amount: ${amount}`)
@@ -292,13 +299,25 @@ export function useTokenApproval() {
     }
 
     // Native token doesn't need approval
-    if (token.isNative) {
+    if ('isNative' in token && token.isNative) {
       return false
     }
 
     const spender = spenderAddress || HYPERBLOOM_ROUTER
-    const amountInWei = parseUnits(amount, token.decimals)
+    // Check against amount with 1% buffer (same as approval)
+    const amountFloat = parseFloat(amount)
+    const amountWithBuffer = amountFloat * 1.01 // 1% buffer
+    const amountInWei = parseUnits(amountWithBuffer.toString(), token.decimals)
     const currentAllowance = await checkAllowance(tokenSymbol, spender)
+
+    console.log('[needsApproval] Checking approval requirement:', {
+      tokenSymbol,
+      originalAmount: amount,
+      amountWithBuffer: amountWithBuffer.toString(),
+      requiredAllowance: amountInWei.toString(),
+      currentAllowance: currentAllowance.toString(),
+      needsApproval: currentAllowance < amountInWei
+    })
 
     return currentAllowance < amountInWei
   }, [checkAllowance])
@@ -322,14 +341,14 @@ export function useTokenApproval() {
     }
 
     // Native token doesn't need approval
-    if (token.isNative) {
+    if ('isNative' in token && token.isNative) {
       return true
     }
 
     setIsApproving(true)
     try {
       const tokenAddress = token.address as Address
-      const maxAmount = BigInt(2) ** BigInt(256) - BigInt(1) // Max uint256
+      const maxAmount = (BigInt(2) ** BigInt(256)) - BigInt(1) // Max uint256
 
       console.log('[Approval] Approving max amount for token:', {
         token: tokenSymbol,
